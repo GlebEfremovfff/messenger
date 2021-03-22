@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:messenger/menu/chat/app_search.dart';
+import 'package:messenger/menu/chat/chat_list_view/chat_list_view.dart';
 
 class ChatView extends StatefulWidget {
   ChatView({Key key}) : super(key: key);
@@ -34,6 +35,7 @@ class _ChatViewState extends State<ChatView> {
               Expanded(
                 child: Container(
                   color: Colors.black87,
+                  child: ChatListView(),
                 ),
               ),
             ],
