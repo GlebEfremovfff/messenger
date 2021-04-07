@@ -122,7 +122,7 @@ class _RegistrationState extends State<Registration> {
     );
   }
 
-  Future<String> get_ip() async {
+  /*Future<String> get_ip() async {
     String ip;
     Map<String, String> headers = {
       'Content-Type': 'application/json; charset=UTF-8',
@@ -132,15 +132,15 @@ class _RegistrationState extends State<Registration> {
     dynamic jsonObject = convert.jsonDecode(utf8.decode(response.bodyBytes));
     ip = jsonObject['ip'];
     return ip;
-  }
+  }*/
 
   void register_button() async {
     _name = _nameController.text;
     Map<String, String> headers = {
       'Content-Type': 'application/json; charset=UTF-8',
     };
-    String _ip = await get_ip();
-    final msg = jsonEncode({'name': _name, 'client_webhook': _ip});
+    //String _ip = await get_ip();
+    final msg = jsonEncode({'name': _name});
     var response = await http.post(
         'http://mediachatlive.fvds.ru:5000/webgram-api/create_user',
         body: msg,
@@ -150,7 +150,7 @@ class _RegistrationState extends State<Registration> {
     write_id(id);
     write_loged("1");
     Navigator.push(context,
-        MaterialPageRoute(builder: (BuildContext context) => BottomBar()));
+        MaterialPageRoute(builder: (BuildContext context) => BottomBar(id)));
   }
 
   void write_id(String str) async {

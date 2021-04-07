@@ -1,15 +1,22 @@
 import 'package:flutter/material.dart';
-import 'package:messenger/user/user.dart';
-import 'package:provider/provider.dart';
+import 'package:messenger/menu/database_helper/database_helper.dart';
 
 class PersonArea extends StatefulWidget {
-  PersonArea({Key key}) : super(key: key);
+  String name;
+  Icon avatar;
+  bool isMe;
+  PersonArea(this.name, this.avatar, this.isMe);
 
   @override
-  _PersonAreaState createState() => _PersonAreaState();
+  _PersonAreaState createState() => _PersonAreaState(name, avatar, isMe);
 }
 
 class _PersonAreaState extends State<PersonArea> {
+  String name;
+  Icon avatar;
+  bool isMe;
+  _PersonAreaState(this.name, this.avatar, this.isMe);
+  DatabaseHelper databaseHelper = DatabaseHelper();
   TextEditingController nickController = TextEditingController();
   @override
   Widget build(BuildContext context) {
@@ -40,11 +47,7 @@ class _PersonAreaState extends State<PersonArea> {
                   child: CircleAvatar(
                     radius: 80,
                     backgroundColor: Colors.grey[350],
-                    child: Icon(
-                      Icons.add,
-                      color: Colors.grey[600],
-                      size: 60,
-                    ),
+                    child: avatar,
                   ),
                 ),
               ),
@@ -52,7 +55,7 @@ class _PersonAreaState extends State<PersonArea> {
                 child: Padding(
                     padding: EdgeInsets.only(left: 15, right: 15, top: 15),
                     child: Text(
-                      Provider.of<User>(context, listen: true).nickname,
+                      name,
                       style: TextStyle(
                         color: Colors.white,
                         fontWeight: FontWeight.bold,
@@ -66,13 +69,43 @@ class _PersonAreaState extends State<PersonArea> {
                   child: Column(children: <Widget>[
                     Padding(
                       padding: EdgeInsets.only(top: 100),
-                      child: Text(
-                        "Вкладки",
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 40,
-                        ),
-                      ),
+                      child: isMe
+                          ? Text(
+                              "Вкладки",
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 40,
+                              ),
+                            )
+                          : GestureDetector(
+                              onTap: () {
+                                clearHistory();
+                              },
+                              child: Container(
+                                child: Row(
+                                  children: <Widget>[
+                                    Padding(
+                                      padding: EdgeInsets.only(left: 10),
+                                      child: Icon(
+                                        Icons.clear_all,
+                                        size: 25,
+                                        color: Colors.red,
+                                      ),
+                                    ),
+                                    Padding(
+                                      padding: EdgeInsets.only(left: 15),
+                                      child: Text(
+                                        "Clear history",
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 20,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
                     ),
                   ]),
                 ),
@@ -82,6 +115,11 @@ class _PersonAreaState extends State<PersonArea> {
         ),
       ),
     );
+  }
+
+  void clearHistory() async {
+    int result;
+    result = await databaseHelper.clearTable();
   }
 
   /*void updateNickname() {

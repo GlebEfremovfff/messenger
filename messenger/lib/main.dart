@@ -17,20 +17,27 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  void read() async {
-    await this._readTextFromLocalFile();
+  void read_logged() async {
+    await this._readTextFromLocalFile_logged();
   }
 
-  String _localFileContent = "none";
+  void read_id() async {
+    await this._readTextFromLocalFile_id();
+  }
+
+  String _localFileContent_logged = "none";
+  String _localFileContent_id = "none";
 
   @override
   void initState() {
     super.initState();
-    this.read();
+    this.read_logged();
+    this.read_id();
   }
 
   @override
   Widget build(BuildContext context) {
+    //print(_localFileContent_id);
     return ChangeNotifierProvider<User>(
       create: (context) => User(),
       child: MaterialApp(
@@ -39,7 +46,11 @@ class _MyAppState extends State<MyApp> {
           primarySwatch: Colors.blue,
           visualDensity: VisualDensity.adaptivePlatformDensity,
         ),
-        home: /*_localFileContent != "1" ? Registration() : */ BottomBar(),
+        home: Scaffold(
+          body: _localFileContent_logged != "1"
+              ? Registration()
+              : BottomBar(_localFileContent_id),
+        ),
       ),
     );
   }
@@ -49,21 +60,39 @@ class _MyAppState extends State<MyApp> {
     return directory.path;
   }
 
-  Future<File> get _getLocalFile async {
+  Future<File> get _getLocalFile_logged async {
     final path = await _getLocalPath;
     return File('$path/loged.txt');
   }
 
-  Future _readTextFromLocalFile() async {
+  Future _readTextFromLocalFile_logged() async {
     String content;
     try {
-      final file = await _getLocalFile;
+      final file = await _getLocalFile_logged;
       content = await file.readAsString();
     } catch (e) {
       content = 'Error loading local file: $e';
     }
     setState(() {
-      this._localFileContent = content;
+      this._localFileContent_logged = content;
+    });
+  }
+
+  Future<File> get _getLocalFile_id async {
+    final path = await _getLocalPath;
+    return File('$path/id.txt');
+  }
+
+  Future _readTextFromLocalFile_id() async {
+    String content;
+    try {
+      final file = await _getLocalFile_id;
+      content = await file.readAsString();
+    } catch (e) {
+      content = 'Error loading local file: $e';
+    }
+    setState(() {
+      this._localFileContent_id = content;
     });
   }
 }
