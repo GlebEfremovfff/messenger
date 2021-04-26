@@ -1,6 +1,9 @@
 import 'dart:async';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:messenger/menu/chat/chat_list_view/ChewieItem.dart';
+import 'package:messenger/menu/chat/chat_list_view/audioBox.dart';
 import 'package:messenger/menu/chat/chat_list_view/message.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert' as convert;
@@ -11,6 +14,7 @@ import 'package:messenger/menu/person_area.dart';
 import 'package:messenger/user/user.dart';
 import 'package:provider/provider.dart';
 import 'package:sqflite/sqflite.dart';
+import 'package:video_player/video_player.dart';
 
 class DialogPers extends StatefulWidget {
   DialogPers({Key key}) : super(key: key);
@@ -42,11 +46,11 @@ class _DialogPersState extends State<DialogPers> {
     id = Provider.of<User>(context, listen: true).id;
 
     if (messageList == null) {
-      messageList = List<Message>();
+      messageList = [];
       updateListView();
     }
     if (keyList == null) {
-      keyList = List<String>();
+      keyList = [];
     }
     updateListView();
     return Scaffold(
@@ -109,12 +113,7 @@ class _DialogPersState extends State<DialogPers> {
                     reverse: true,
                     itemCount: messageList.length,
                     itemBuilder: (BuildContext context, int pos) {
-                      if (messageList[pos].is_visible == 1 &&
-                          messageList[pos].text.isNotEmpty) {
-                        if (messageList[pos].is_button == 0) {
-                          return MessageCard(messageList[pos]);
-                        }
-                      }
+                      return MessageCard(messageList[pos]);
                     },
                   ),
                 ),
@@ -197,7 +196,8 @@ class _DialogPersState extends State<DialogPers> {
                     child: Icon(Icons.send, color: Colors.white),
                     onTap: () async {
                       setState(() {
-                        _save(context, Message(messContr.text, 0, 0, 1));
+                        _save(
+                            context, Message(messContr.text, 0, 0, "", "", ""));
                         sendMessage(context, messContr.text);
                       });
                       messContr.clear();
@@ -256,9 +256,67 @@ class _DialogPersState extends State<DialogPers> {
                     topRight: Radius.circular(10),
                     bottomRight: Radius.circular(10)),
           ),
-          child: Text(
-            message.text,
-            style: TextStyle(color: Colors.white, fontSize: 20),
+          child: Column(
+            children: <Widget>[
+              message.photoUrl.isNotEmpty
+                  ? Container(
+                      height: 150,
+                      width: 200,
+                      child: CachedNetworkImage(
+                        imageUrl:
+                            "http://mediachatlive.fvds.ru:5000/webgram-api/upload/" +
+                                message.photoUrl,
+                        placeholder: (context, url) =>
+                            CircularProgressIndicator(),
+                        fit: BoxFit.fill,
+                      ),
+                    )
+                  : SizedBox(
+                      height: 1,
+                    ),
+              message.videoUrl.isNotEmpty
+                  ? Container(
+                      height: 150,
+                      width: 200,
+                      color: Colors.black,
+                      child: Center(
+                        child: IconButton(
+                          icon:
+                              Icon(Icons.play_circle_fill, color: Colors.white),
+                          onPressed: () {
+                            Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (BuildContext context) => ChewieItem(
+                                        VideoPlayerController.network(
+                                            "http://mediachatlive.fvds.ru:5000/webgram-api/upload/" +
+                                                message.videoUrl),
+                                        true)));
+                          },
+                        ),
+                      ),
+                    )
+                  : SizedBox(
+                      height: 1,
+                    ),
+              message.text.isNotEmpty
+                  ? Text(
+                      message.text,
+                      style: TextStyle(color: Colors.white, fontSize: 20),
+                    )
+                  : Text(
+                      "message.text not been sended",
+                      style: TextStyle(color: Colors.white, fontSize: 20),
+                    ),
+              message.audioUrl.isNotEmpty
+                  ? AudioBox(
+                      url:
+                          "http://mediachatlive.fvds.ru:5000/webgram-api/upload/" +
+                              message.audioUrl)
+                  : SizedBox(
+                      height: 1,
+                    ),
+            ],
           ),
         ),
       ),
@@ -330,7 +388,7 @@ class _DialogPersState extends State<DialogPers> {
             convert.jsonDecode(utf8.decode(response.bodyBytes));
         if (jsonObject['reply_keyboard'] != null) {
           dynamic btns = jsonObject['reply_keyboard'];
-          List<String> bnts_list = List<String>();
+          List<String> bnts_list = [];
           btns.forEach((btn) {
             bnts_list.add(btn.toString());
           });
@@ -401,7 +459,7 @@ class _DialogPersState extends State<DialogPers> {
             convert.jsonDecode(utf8.decode(response.bodyBytes));
         if (jsonObject['reply_keyboard'] != null) {
           dynamic btns = jsonObject['reply_keyboard'];
-          List<String> bnts_list = List<String>();
+          List<String> bnts_list = [];
           btns.forEach((btn) {
             bnts_list.add(btn.toString());
           });
@@ -410,10 +468,11 @@ class _DialogPersState extends State<DialogPers> {
           });
         }
         if (jsonObject['messages'] != null) {
+          print(jsonObject['messages']);
           dynamic msgs = jsonObject['messages'];
           msgs.forEach((obj) {
             if (obj != null) {
-              _save(context, Message.fromJson(obj));
+              _save(context, Message.fromJsonObject(obj));
             }
           });
           new_getted = true;

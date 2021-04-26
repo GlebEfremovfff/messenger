@@ -141,10 +141,9 @@ class _RegistrationState extends State<Registration> {
     };
     //String _ip = await get_ip();
     final msg = jsonEncode({'name': _name});
-    var response = await http.post(
-        'http://mediachatlive.fvds.ru:5000/webgram-api/create_user',
-        body: msg,
-        headers: headers);
+    var url =
+        Uri.parse("http://mediachatlive.fvds.ru:5000/webgram-api/create_user");
+    var response = await http.post(url, body: msg, headers: headers);
     dynamic jsonObject = convert.jsonDecode(utf8.decode(response.bodyBytes));
     String id = jsonObject['id'].toString();
     write_id(id);

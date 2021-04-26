@@ -13,7 +13,9 @@ class DatabaseHelper {
   String colMessage = 'message';
   String colFromBot = 'fromBot';
   String colIsButton = 'isButton';
-  String colIsVisible = 'isVisible';
+  String colPhotoUrl = 'photoUrl';
+  String colVideoUrl = 'videoUrl';
+  String colAudioUrl = 'audioUrl';
   DatabaseHelper._createInstance();
 
   factory DatabaseHelper() {
@@ -40,7 +42,7 @@ class DatabaseHelper {
 
   void _createDb(Database db, int newVersion) async {
     await db.execute(
-        'CREATE TABLE $messageTable($colId INTEGER PRIMARY KEY AUTOINCREMENT, $colMessage TEXT, $colFromBot INTEGER, $colIsButton INTEGER, $colIsVisible INTEGER)');
+        'CREATE TABLE $messageTable($colId INTEGER PRIMARY KEY AUTOINCREMENT, $colMessage TEXT, $colFromBot INTEGER, $colIsButton INTEGER, $colPhotoUrl TEXT, $colVideoUrl TEXT, $colAudioUrl TEXT)');
   }
 
   Future<List<Map<String, dynamic>>> getMessageMapList() async {
@@ -96,14 +98,6 @@ class DatabaseHelper {
   Future<int> deleteButtons() async {
     var db = await this.database;
     var result = db.delete(messageTable, where: '$colIsButton = 1');
-    return result;
-  }
-
-  Future<int> hideButtons() async {
-    var db = await this.database;
-    var result = await db.rawUpdate(
-        'UPDATE $messageTable SET $colIsVisible = ? WHERE $colIsButton = ?',
-        [0, 1]);
     return result;
   }
 }
